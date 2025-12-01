@@ -55,7 +55,6 @@ for i, xi in enumerate(puntos):
     plt.plot(xi, f(xi), 'ro')
     desplazamiento = 0.05 + 0.05*(i%5)  # evitar solapamiento
     plt.text(xi, f(xi)+desplazamiento, f"x{i}", fontsize=8, ha='center')
-    # Opcional: línea vertical hasta el eje x
     plt.plot([xi, xi], [0, f(xi)], 'r--', alpha=0.5)
 
 plt.title("Método de Newton-Raphson")
@@ -63,4 +62,7 @@ plt.xlabel("x")
 plt.ylabel("f(x)")
 plt.grid(True)
 plt.legend()
+
+# --- Guardar la figura ---
+plt.savefig("imgs/Newton-Raphson.png", dpi=300)
 plt.show()

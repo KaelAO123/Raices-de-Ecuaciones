@@ -4,7 +4,6 @@ import numpy as np
 def f(x):
     return 3 * np.sin(0.5 * x) - 0.5 * x + 2
 
-
 def biseccion(a, b, tol=1e-6, max_iter=100):
     if f(a) * f(b) >= 0:
         print("El intervalo [a,b] no tiene cambio de signo.")
@@ -37,24 +36,32 @@ def biseccion(a, b, tol=1e-6, max_iter=100):
 
     print("Se alcanzó el máximo número de iteraciones.")
     return c, puntos
+
+# --- Uso del método ---
 a = 5.7
 b = 5.8
 raiz, puntos = biseccion(a, b)
 
 print(f"\nRaíz aproximada: {raiz:.6f}")
-x = np.linspace(a-1, b+1, 400)
+
+# --- Gráfica ---
+x = np.linspace(a-0.05, b+0.05, 400)
 y = f(x)
 
 plt.figure(figsize=(10,6))
 plt.plot(x, y, label="f(x)")
 plt.axhline(0, color='black', linewidth=0.8)
+
 for i, c in enumerate(puntos):
     plt.plot(c, f(c), 'ro')
-    plt.text(c, f(c)+0.2, f"c{i}", fontsize=8, ha='center')
+    plt.text(c, f(c)+0.05, f"c{i}", fontsize=8, ha='center')
 
 plt.title("Método de Bisección")
 plt.xlabel("x")
 plt.ylabel("f(x)")
 plt.grid(True)
 plt.legend()
+
+# --- Guardar la figura ---
+plt.savefig("imgs/Biseccion.png", dpi=300)  # Guarda la imagen en alta resolución
 plt.show()
