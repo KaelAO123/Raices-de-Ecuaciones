@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métodos Numéricos para Búsqueda de Raíces</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input-section, .results-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .method-params {
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: 5px;
+        }
+        
+        .results-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--light-color);
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            height: 300px;
+        }
+        
+        .comparison-table {
+            margin-top: 20px;
+        }
+        
+        .error {
+            color: var(--danger-color);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .success {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .example-functions {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .example-functions h4 {
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+        }
+        
+        .example-function {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .example-function:hover {
+            background-color: #dee2e6;
+        }
+        
+        .function-help {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Métodos Numéricos para Búsqueda de Raíces</h1>
+            <p class="description">
+                Esta herramienta implementa y compara los métodos de Bisección, Newton-Raphson y Secante 
+                para encontrar las raíces de una ecuación. Ingresa tu función y los parámetros necesarios 
+                para cada método, luego visualiza los resultados y compara su eficiencia.
+            </p>
+        </header>
+        
+        <div class="main-content">
+            <section class="input-section">
+                <h2>Configuración</h2>
+                <form id="equation-form">
+                    <div class="form-group">
+                        <label for="function-input">Función f(x):</label>
+                        <input type="text" id="function-input" placeholder="Ej: x^3 - 2*x - 5" value="x^3 - x^2 * Math.exp(-0.5*x) - 3*x + 1" required>
+                        <small>Usa operadores matemáticos estándar: +, -, *, /, ^, Math.sin, Math.cos, Math.tan, Math.log, Math.exp, Math.sqrt, etc.</small>
+                        
+                        <div class="function-help">
+                            <strong>Formato correcto:</strong> Usa "Math.exp" en lugar de "exp", "Math.sin" en lugar de "sin", etc.
+                            <br><strong>Ejemplo:</strong> x^3 - x^2 * Math.exp(-0.5*x) - 3*x + 1
+                        </div>
+                    </div>
+                    
+                    <div class="example-functions">
+                        <h4>Ejemplos:</h4>
+                        <span class="example-function" onclick="document.getElementById('function-input').value = 'x^3 - 2*x - 5'">x³ - 2x - 5</span>
+                        <span class="example-function" onclick="document.getElementById('function-input').value = 'x^2 - 4'">x² - 4</span>
+                        <span class="example-function" onclick="document.getElementById('function-input').value = 'Math.sin(x) - x/2'">sin(x) - x/2</span>
+                        <span class="example-function" onclick="document.getElementById('function-input').value = 'x^3 - x^2 * Math.exp(-0.5*x) - 3*x + 1'">x³ - x²e^(-0.5x) - 3x + 1</span>
+                        <span class="example-function" onclick="document.getElementById('function-input').value = 'Math.exp(x) - 4*x'">e^x - 4x</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="method-select">Método:</label>
+                        <select id="method-select">
+                            <option value="bisection">Bisección</option>
+                            <option value="newton">Newton-Raphson</option>
+                            <option value="secant">Secante</option>
+                            <option value="all">Todos los métodos</option>
+                        </select>
+                    </div>
+                    
+                    <div id="bisection-params" class="method-params">
+                        <div class="form-group">
+                            <label for="bisection-a">Intervalo inferior (a):</label>
+                            <input type="number" id="bisection-a" step="any" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="bisection-b">Intervalo superior (b):</label>
+                            <input type="number" id="bisection-b" step="any" value="2">
+                        </div>
+                    </div>
+                    
+                    <div id="newton-params" class="method-params">
+                        <div class="form-group">
+                            <label for="newton-x0">Valor inicial (x₀):</label>
+                            <input type="number" id="newton-x0" step="any" value="1">
+                        </div>
+                    </div>
+                    
+                    <div id="secant-params" class="method-params">
+                        <div class="form-group">
+                            <label for="secant-x0">Primer valor inicial (x₀):</label>
+                            <input type="number" id="secant-x0" step="any" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="secant-x1">Segundo valor inicial (x₁):</label>
+                            <input type="number" id="secant-x1" step="any" value="2">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tolerance">Tolerancia:</label>
+                        <input type="number" id="tolerance" step="any" value="0.0001" min="0.0000000001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max-iterations">Máximo de iteraciones:</label>
+                        <input type="number" id="max-iterations" value="100" min="1">
+                    </div>
+                    
+                    <button type="submit" id="calculate-btn">Calcular Raíces</button>
+                </form>
+            </section>
+            
+            <section class="results-section">
+                <h2>Resultados</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Calculando...</p>
+                </div>
+                
+                <div id="results-content">
+                    <div class="results-tabs">
+                        <div class="tab active" data-tab="results">Resultados</div>
+                        <div class="tab" data-tab="graph">Gráfico</div>
+                        <div class="tab" data-tab="comparison">Comparación</div>
+                    </div>
+                    
+                    <div id="results-tab" class="tab-content active">
+                        <div id="bisection-results" class="method-results">
+                            <h3>Método de Bisección</h3>
+                            <div id="bisection-table-container"></div>
+                        </div>
+                        
+                        <div id="newton-results" class="method-results">
+                            <h3>Método de Newton-Raphson</h3>
+                            <div id="newton-table-container"></div>
+                        </div>
+                        
+                        <div id="secant-results" class="method-results">
+                            <h3>Método de la Secante</h3>
+                            <div id="secant-table-container"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="graph-tab" class="tab-content">
+                        <div class="chart-container">
+                            <canvas id="function-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div id="comparison-tab" class="tab-content">
+                        <div class="comparison-table">
+                            <h3>Comparación de Métodos</h3>
+                            <table id="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Método</th>
+                                        <th>Raíz Aproximada</th>
+                                        <th>Iteraciones</th>
+                                        <th>Error Final</th>
+                                        <th>Tiempo (ms)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparison-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>Proyecto de Métodos Numéricos - Implementación y Comparación de Métodos para Encontrar Raíces</p>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentChart = null;
+        
+        // Mostrar parámetros específicos del método seleccionado
+        document.getElementById('method-select').addEventListener('change', function() {
+            // Ocultar todos los parámetros
+            document.querySelectorAll('.method-params').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Mostrar parámetros del método seleccionado
+            const method = this.value;
+            if (method === 'bisection' || method === 'all') {
+                document.getElementById('bisection-params').style.display = 'block';
+            }
+            if (method === 'newton' || method === 'all') {
+                document.getElementById('newton-params').style.display = 'block';
+            }
+            if (method === 'secant' || method === 'all') {
+                document.getElementById('secant-params').style.display = 'block';
+            }
+        });
+        
+        // Inicializar mostrando parámetros de bisección
+        document.getElementById('bisection-params').style.display = 'block';
+        
+        // Manejar cambio de pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remover clase active de todas las pestañas
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Agregar clase active a la pestaña clickeada
+                this.classList.add('active');
+                
+                // Ocultar todos los contenidos
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Mostrar contenido correspondiente
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Función mejorada para evaluar expresiones matemáticas
+        function evaluateFunction(fn, x) {
+            try {
+                // Reemplazar comas por puntos para decimales
+                let expression = fn.replace(/,/g, '.');
+                
+                // Reemplazar ^ por ** para exponentes
+                expression = expression.replace(/\^/g, '**');
+                
+                // Crear una función segura usando Function constructor
+                const safeFunction = new Function('x', `
+                    try {
+                        with (Math) {
+                            return ${expression};
+                        }
+                    } catch (e) {
+                        throw new Error('Error al evaluar la expresión: ' + e.message);
+                    }
+                `);
+                
+                return safeFunction(x);
+            } catch (error) {
+                throw new Error(`Error al evaluar zón: ${error.message}`);
+            }
+        }
+        
+        // Método de Bisección
+        function bisectionMethod(fn, a, b, tolerance, maxIterations) {
+            let results = [];
+            let startTime = performance.now();
+
+            
+            // Verificar que f(a) y f(b) tengan signos opuestos
+            const fa = evaluateFunction(fn, a);
+            const fb = evaluateFunction(fn, b);
+            
+            if (fa * fb >= 0) {
+                throw new Error('La función debe tener signos opuestos en los extremos del intervalo [a,b]. f(a)=' + fa + ', f(b)=' + fb);
+            }
+            
+            let iteration = 0;
+            let c = a;
+            let error = Math.abs(b - a);
+            
+            while (error > tolerance && iteration < maxIterations) {
+                c = (a + b) / 2;
+                const fc = evaluateFunction(fn, c);
+                
+                results.push({
+                    iteration: iteration + 1,
+                    a: a,
+                    b: b,
+                    c: c,
+                    f_c: fc,
+                    error: error
+                });
+                
+                if (Math.abs(fc) < tolerance || error < tolerance) {
+                    break;
+                }
+                
+                if (fa * fc < 0) {
+                    b = c;
+                } else {
+                    a = c;
+                }
+                
+                error = Math.abs(b - a);
+                iteration++;
+            }
+            
+            let endTime = performance.now();
+            return {
+                root: c,
+                iterations: iteration + 1,
+                results: results,
+                time: endTime - startTime
+            };
+        }
+        
+        // Método de Newton-Raphson
+        function newtonRaphsonMethod(fn, x0, tolerance, maxIterations) {
+            let results = [];
+            let startTime = performance.now();
+            
+            // Derivada numérica
+            function derivative(fn, x) {
+                const h = 1e-7;
+                return (evaluateFunction(fn, x + h) - evaluateFunction(fn, x - h)) / (2 * h);
+            }
+            
+            let iteration = 0;
+            let x = x0;
+            let error = tolerance + 1;
+            
+            while (error > tolerance && iteration < maxIterations) {
+                const fx = evaluateFunction(fn, x);
+                const dfx = derivative(fn, x);
+                
+                if (Math.abs(dfx) < 1e-10) {
+                    throw new Error('La derivada es demasiado pequeña. El método puede no converger.');
+                }
+                
+                const xNew = x - fx / dfx;
+                error = Math.abs(xNew - x);
+                
+                results.push({
+                    iteration: iteration + 1,
+                    x: x,
+                    f_x: fx,
+                    df_x: dfx,
+                    x_new: xNew,
+                    error: error
+                });
+                
+                x = xNew;
+                iteration++;
+                
+                if (Math.abs(fx) < tolerance) {
+                    break;
+                }
+            }
+            
+            let endTime = performance.now();
+            return {
+                root: x,
+                iterations: iteration,
+                results: results,
+                time: endTime - startTime
+            };
+        }
+        
+        // Método de la Secante
+        function secantMethod(fn, x0, x1, tolerance, maxIterations) {
+            let results = [];
+            let startTime = performance.now();
+            
+            let iteration = 0;
+            let xPrev = x0;
+            let xCurr = x1;
+            let error = tolerance + 1;
+            
+            while (error > tolerance && iteration < maxIterations) {
+                const fPrev = evaluateFunction(fn, xPrev);
+                const fCurr = evaluateFunction(fn, xCurr);
+                
+                if (Math.abs(fCurr - fPrev) < 1e-10) {
+                    throw new Error('Diferencia entre f(x) demasiado pequeña. El método puede no converger.');
+                }
+                
+                const xNew = xCurr - fCurr * (xCurr - xPrev) / (fCurr - fPrev);
+                error = Math.abs(xNew - xCurr);
+                
+                results.push({
+                    iteration: iteration + 1,
+                    x_prev: xPrev,
+                    x_curr: xCurr,
+                    f_prev: fPrev,
+                    f_curr: fCurr,
+                    x_new: xNew,
+                    error: error
+                });
+                
+                xPrev = xCurr;
+                xCurr = xNew;
+                iteration++;
+                
+                if (Math.abs(fCurr) < tolerance) {
+                    break;
+                }
+            }
+            
+            let endTime = performance.now();
+            return {
+                root: xCurr,
+                iterations: iteration,
+                results: results,
+                time: endTime - startTime
+            };
+        }
+        
+        // Generar tabla de resultados
+        function generateResultsTable(results, method) {
+            if (!results || results.length === 0) {
+                return '<p>No hay resultados para mostrar.</p>';
+            }
+            
+            let table = '<table><thead><tr>';
+            
+            // Encabezados según el método
+            if (method === 'bisection') {
+                table += '<th>Iteración</th><th>a</th><th>b</th><th>c</th><th>f(c)</th><th>Error</th></tr></thead><tbody>';
+                
+                results.forEach(row => {
+                    table += `<tr>
+                        <td>${row.iteration}</td>
+                        <td>${row.a.toFixed(6)}</td>
+                        <td>${row.b.toFixed(6)}</td>
+                        <td>${row.c.toFixed(6)}</td>
+                        <td>${row.f_c.toFixed(6)}</td>
+                        <td>${row.error.toFixed(6)}</td>
+                    </tr>`;
+                });
+            } else if (method === 'newton') {
+                table += '<th>Iteración</th><th>x</th><th>f(x)</th><th>f\'(x)</th><th>x_new</th><th>Error</th></tr></thead><tbody>';
+                
+                results.forEach(row => {
+                    table += `<tr>
+                        <td>${row.iteration}</td>
+                        <td>${row.x.toFixed(6)}</td>
+                        <td>${row.f_x.toFixed(6)}</td>
+                        <td>${row.df_x.toFixed(6)}</td>
+                        <td>${row.x_new.toFixed(6)}</td>
+                        <td>${row.error.toFixed(6)}</td>
+                    </tr>`;
+                });
+            } else if (method === 'secant') {
+                table += '<th>Iteración</th><th>x_prev</th><th>x_curr</th><th>f(x_prev)</th><th>f(x_curr)</th><th>x_new</th><th>Error</th></tr></thead><tbody>';
+                
+                results.forEach(row => {
+                    table += `<tr>
+                        <td>${row.iteration}</td>
+                        <td>${row.x_prev.toFixed(6)}</td>
+                        <td>${row.x_curr.toFixed(6)}</td>
+                        <td>${row.f_prev.toFixed(6)}</td>
+                        <td>${row.f_curr.toFixed(6)}</td>
+                        <td>${row.x_new.toFixed(6)}</td>
+                        <td>${row.error.toFixed(6)}</td>
+                    </tr>`;
+                });
+            }
+            
+            table += '</tbody></table>';
+            return table;
+        }
+        
+        // Dibujar gráfico de la función
+        function drawFunctionChart(fn, roots) {
+            const ctx = document.getElementById('function-chart').getContext('2d');
+            
+            // Destruir gráfico anterior si existe
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            // Generar datos para el gráfico
+            const xValues = [];
+            const yValues = [];
+            
+            // Determinar rango basado en las raíces encontradas
+            let minX = -5;
+            let maxX = 5;
+            
+            if (roots && roots.length > 0) {
+                minX = Math.min(-2, ...roots.map(r => r.root)) - 1;
+                maxX = Math.max(2, ...roots.map(r => r.root)) + 1;
+            }
+            
+            const step = (maxX - minX) / 100;
+            
+            for (let x = minX; x <= maxX; x += step) {
+                xValues.push(x);
+                try {
+                    yValues.push(evaluateFunction(fn, x));
+                } catch (error) {
+                    yValues.push(null);
+                }
+            }
+            
+            // Configurar datos del gráfico
+            const data = {
+                labels: xValues,
+                datasets: [{
+                    label: 'f(x)',
+                    data: yValues,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            };
+            
+            // Agregar puntos para las raíces
+            if (roots && roots.length > 0) {
+                roots.forEach((root, index) => {
+                    const colors = ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'];
+                    data.datasets.push({
+                        label: `Raíz ${root.method}`,
+                        data: [{x: root.root, y: 0}],
+                        backgroundColor: colors[index % colors.length],
+                        borderColor: colors[index % colors.length],
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false
+                    });
+                });
+            }
+            
+            // Configurar opciones del gráfico
+            const config = {
+                type: 'scatter',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'x'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'f(x)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        return `f(${context.parsed.x.toFixed(2)}) = ${context.parsed.y.toFixed(4)}`;
+                                    } else {
+                                        return `Raíz: x ≈ ${context.parsed.x.toFixed(4)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Crear el gráfico
+            currentChart = new Chart(ctx, config);
+        }
+        
+        // Manejar envío del formulario
+        document.getElementById('equation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Mostrar indicador de carga
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results-content').style.opacity = '0.5';
+            
+            // Obtener valores del formulario
+            const fn = document.getElementById('function-input').value;
+            const method = document.getElementById('method-select').value;
+            const tolerance = parseFloat(document.getElementById('tolerance').value);
+            const maxIterations = parseInt(document.getElementById('max-iterations').value);
+            
+            // Ejecutar después de un breve retraso para permitir que se muestre el indicador de carga
+            setTimeout(() => {
+                try {
+                    const results = {};
+                    const roots = [];
+                    
+                    // Ejecutar métodos según selección
+                    if (method === 'bisection' || method === 'all') {
+                        const a = parseFloat(document.getElementById('bisection-a').value);
+                        const b = parseFloat(document.getElementById('bisection-b').value);
+                        results.bisection = bisectionMethod(fn, a, b, tolerance, maxIterations);
+                        roots.push({
+                            method: 'Bisección',
+                            root: results.bisection.root,
+                            iterations: results.bisection.iterations,
+                            error: results.bisection.results[results.bisection.results.length - 1]?.error || 0
+                        });
+                    }
+                    
+                    if (method === 'newton' || method === 'all') {
+                        const x0 = parseFloat(document.getElementById('newton-x0').value);
+                        results.newton = newtonRaphsonMethod(fn, x0, tolerance, maxIterations);
+                        roots.push({
+                            method: 'Newton-Raphson',
+                            root: results.newton.root,
+                            iterations: results.newton.iterations,
+                            error: results.newton.results[results.newton.results.length - 1]?.error || 0
+                        });
+                    }
+                    
+                    if (method === 'secant' || method === 'all') {
+                        const x0 = parseFloat(document.getElementById('secant-x0').value);
+                        const x1 = parseFloat(document.getElementById('secant-x1').value);
+                        results.secant = secantMethod(fn, x0, x1, tolerance, maxIterations);
+                        roots.push({
+                            method: 'Secante',
+                            root: results.secant.root,
+                            iterations: results.secant.iterations,
+                            error: results.secant.results[results.secant.results.length - 1]?.error || 0
+                        });
+                    }
+                    
+                    // Mostrar resultados
+                    if (results.bisection) {
+                        document.getElementById('bisection-results').style.display = 'block';
+                        document.getElementById('bisection-table-container').innerHTML = 
+                            `<p class="success">Raíz encontrada: ${results.bisection.root.toFixed(6)}</p>` +
+                            `<p>Iteraciones: ${results.bisection.iterations}, Error final: ${results.bisection.results[results.bisection.results.length - 1]?.error.toFixed(6) || 'N/A'}</p>` +
+                            generateResultsTable(results.bisection.results, 'bisection');
+                    } else {
+                        document.getElementById('bisection-results').style.display = 'none';
+                    }
+                    
+                    if (results.newton) {
+                        document.getElementById('newton-results').style.display = 'block';
+                        document.getElementById('newton-table-container').innerHTML = 
+                            `<p class="success">Raíz encontrada: ${results.newton.root.toFixed(6)}</p>` +
+                            `<p>Iteraciones: ${results.newton.iterations}, Error final: ${results.newton.results[results.newton.results.length - 1]?.error.toFixed(6) || 'N/A'}</p>` +
+                            generateResultsTable(results.newton.results, 'newton');
+                    } else {
+                        document.getElementById('newton-results').style.display = 'none';
+                    }
+                    
+                    if (results.secant) {
+                        document.getElementById('secant-results').style.display = 'block';
+                        document.getElementById('secant-table-container').innerHTML = 
+                            `<p class="success">Raíz encontrada: ${results.secant.root.toFixed(6)}</p>` +
+                            `<p>Iteraciones: ${results.secant.iterations}, Error final: ${results.secant.results[results.secant.results.length - 1]?.error.toFixed(6) || 'N/A'}</p>` +
+                            generateResultsTable(results.secant.results, 'secant');
+                    } else {
+                        document.getElementById('secant-results').style.display = 'none';
+                    }
+                    
+                    // Actualizar tabla de comparación
+                    const comparisonBody = document.getElementById('comparison-body');
+                    comparisonBody.innerHTML = '';
+                    
+                    if (results.bisection) {
+                        comparisonBody.innerHTML += `
+                            <tr>
+                                <td>Bisección</td>
+                                <td>${results.bisection.root.toFixed(6)}</td>
+                                <td>${results.bisection.iterations}</td>
+                                <td>${results.bisection.results[results.bisection.results.length - 1]?.error.toFixed(6) || 'N/A'}</td>
+                                <td>${results.bisection.time.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    if (results.newton) {
+                        comparisonBody.innerHTML += `
+                            <tr>
+                                <td>Newton-Raphson</td>
+                                <td>${results.newton.root.toFixed(6)}</td>
+                                <td>${results.newton.iterations}</td>
+                                <td>${results.newton.results[results.newton.results.length - 1]?.error.toFixed(6) || 'N/A'}</td>
+                                <td>${results.newton.time.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    if (results.secant) {
+                        comparisonBody.innerHTML += `
+                            <tr>
+                                <td>Secante</td>
+                                <td>${results.secant.root.toFixed(6)}</td>
+                                <td>${results.secant.iterations}</td>
+                                <td>${results.secant.results[results.secant.results.length - 1]?.error.toFixed(6) || 'N/A'}</td>
+                                <td>${results.secant.time.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Dibujar gráfico
+                    drawFunctionChart(fn, roots);
+                    
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                } finally {
+                    // Ocultar indicador de carga
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('results-content').style.opacity = '1';
+                }
+            }, 100);
+        });
+        
+        // Inicializar con un cálculo de ejemplo
+        window.addEventListener('load', function() {
+            document.getElementById('equation-form').dispatchEvent(new Event('submit'));
+        });
+    </script>
+</body>
+</html>
